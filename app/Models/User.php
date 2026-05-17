@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+
+#[Fillable(['name', 'email', 'password', 'phone', 'phone_verified_at', 'social_provider', 'social_id', 'avatar', 'email_verified_at', 'is_admin', 'plan', 'plan_expires_at', 'default_currency', 'locale'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+class User extends Authenticatable
+{
+    /** @use HasFactory<UserFactory> */
+    use Billable, HasFactory, Notifiable, TwoFactorAuthenticatable;
+
+    public function wallets(): HasMany
+    {
+        return $this->hasMany(Wallet::class);
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    public function paymentLogs(): HasMany
+    {
+        return $this->hasMany(PaymentLog::class);
+    }
+
+    public function appNotifications(): HasMany
+    {
+        return $this->hasMany(AppNotification::class);
+    }
+
+    public function trips(): HasMany
+    {
+        return $this->hasMany(Trip::class);
+    }
+
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    public function groups(): HasMany
+    {
+        return $this->hasMany(Group::class);
+    }
+
+    public function entities(): HasMany
+    {
+        return $this->hasMany(Entity::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'two_factor_confirmed_at' => 'datetime',
+            'plan_expires_at' => 'datetime',
+        ];
+    }
+}
