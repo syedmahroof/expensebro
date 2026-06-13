@@ -48,7 +48,8 @@ export default {
             title: 'Preferences',
             description: 'Set your default currency and language',
             defaultCurrency: 'Default Currency',
-            currencyNote: 'All amounts will be converted to this currency for reporting',
+            currencyNote:
+                'All amounts will be converted to this currency for reporting',
             language: 'Language',
             save: 'Save Preferences',
             saved: 'Preferences saved!',

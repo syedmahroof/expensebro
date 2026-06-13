@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LoanResource;
 use App\Models\Loan;
-use App\Services\CurrencyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -55,9 +54,7 @@ class LoanController extends Controller
         $defaultCurrency = strtoupper($user->default_currency ?? 'PKR');
 
         $validated['currency'] = $currency;
-        $validated['converted_amount'] = $currency !== $defaultCurrency
-            ? CurrencyService::convert((float) $validated['amount'], $currency, $defaultCurrency)
-            : $validated['amount'];
+        
 
         $loan = $user->loans()->create($validated);
 

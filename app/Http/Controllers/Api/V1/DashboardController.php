@@ -32,33 +32,38 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        $totalExpenses = (float) ($user->transactions()
+        $totalExpenses = $user->transactions()
             ->where('type', 'expense')
             ->whereDate('date', '>=', $thisMonth)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('currency, SUM(amount) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
 
-        $totalIncome = (float) ($user->transactions()
+        $totalIncome = $user->transactions()
             ->where('type', 'income')
             ->whereDate('date', '>=', $thisMonth)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('currency, SUM(amount) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
 
-        $lastMonthExpenses = (float) ($user->transactions()
+        $lastMonthExpenses = $user->transactions()
             ->where('type', 'expense')
             ->whereDate('date', '>=', $lastMonth)
             ->whereDate('date', '<=', $lastMonthEnd)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('currency, SUM(amount) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
 
-        $netWorth = (float) $user->wallets()->where('is_active', true)->sum('balance');
+        $netWorth = $user->wallets()->where('is_active', true)->selectRaw('currency, SUM(balance) as total')->groupBy('currency')->pluck('total', 'currency')->toArray();
 
         $categoryBreakdown = $user->transactions()
             ->with('category:id,name,color')
             ->where('type', 'expense')
             ->whereDate('date', '>=', $thisMonth)
-            ->selectRaw('category_id, SUM(COALESCE(converted_amount, amount)) as total')
-            ->groupBy('category_id')
+            ->selectRaw('category_id, currency, SUM(amount) as total')->groupBy('category_id', 'currency')
             ->orderByDesc('total')
             ->limit(6)
             ->get()
@@ -68,11 +73,28 @@ class DashboardController extends Controller
                     'name' => $row->category->name,
                     'color' => $row->category->color,
                 ] : null,
-                'total' => (float) $row->total,
+                'currency' => $row->currency, 'total' => (float) $row->total,
             ]);
 
         $txCount = $user->transactions()->whereDate('date', '>=', $thisMonth)->count();
         $daysIntoMonth = now()->day;
+
+        $avgDailySpend = [];
+        $balance = [];
+        $expenseChange = [];
+        $savingsRate = [];
+
+        $allCurrencies = collect(array_keys($totalIncome))->merge(array_keys($totalExpenses))->unique();
+        foreach ($allCurrencies as $c) {
+            $inc = $totalIncome[$c] ?? 0;
+            $exp = $totalExpenses[$c] ?? 0;
+            $balance[$c] = $inc - $exp;
+            $savingsRate[$c] = $inc > 0 ? round((($inc - $exp) / $inc) * 100, 1) : 0;
+            $avgDailySpend[$c] = $daysIntoMonth > 0 ? round($exp / $daysIntoMonth, 0) : 0;
+
+            $lastExp = $lastMonthExpenses[$c] ?? 0;
+            $expenseChange[$c] = $lastExp > 0 ? round((($exp - $lastExp) / $lastExp) * 100, 1) : 0;
+        }
 
         return response()->json([
             'currency' => $user->default_currency ?? 'PKR',
@@ -81,14 +103,12 @@ class DashboardController extends Controller
             'stats' => [
                 'total_expenses' => $totalExpenses,
                 'total_income' => $totalIncome,
-                'balance' => $totalIncome - $totalExpenses,
+                'balance' => $balance,
                 'net_worth' => $netWorth,
-                'savings_rate' => $totalIncome > 0 ? round((($totalIncome - $totalExpenses) / $totalIncome) * 100, 1) : 0,
-                'avg_daily_spend' => $daysIntoMonth > 0 ? round($totalExpenses / $daysIntoMonth, 0) : 0,
+                'savings_rate' => $savingsRate,
+                'avg_daily_spend' => $avgDailySpend,
                 'tx_count' => $txCount,
-                'expense_change' => $lastMonthExpenses > 0
-                    ? round((($totalExpenses - $lastMonthExpenses) / $lastMonthExpenses) * 100, 1)
-                    : 0,
+                'expense_change' => $expenseChange,
             ],
             'category_breakdown' => $categoryBreakdown,
         ]);

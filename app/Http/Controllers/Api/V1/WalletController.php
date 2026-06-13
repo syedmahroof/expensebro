@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\WalletResource;
 use App\Models\Wallet;
-use App\Services\CurrencyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -82,7 +81,7 @@ class WalletController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'type' => ['required', 'in:cash,bank,card,crypto,other'],
-            'currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
+            'currency' => ['required', 'string', Rule::in(array_keys(config('currencies.supported')))],
             'balance' => [$isUpdate ? 'sometimes' : 'required', 'numeric'],
             'color' => ['required', 'string', 'size:7'],
             'icon' => ['required', 'string', 'max:50'],

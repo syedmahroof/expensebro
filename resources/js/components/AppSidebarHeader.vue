@@ -7,16 +7,19 @@ import GlobalSearch from '@/components/GlobalSearch.vue';
 import NotificationBell from '@/components/NotificationBell.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppearance } from '@/composables/useAppearance';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem } from '@/types';
 
-withDefaults(
-    defineProps<{ breadcrumbs?: BreadcrumbItem[] }>(),
-    { breadcrumbs: () => [] },
-);
+withDefaults(defineProps<{ breadcrumbs?: BreadcrumbItem[] }>(), {
+    breadcrumbs: () => [],
+});
 
 const { appearance, updateAppearance } = useAppearance();
 const page = usePage();
@@ -24,7 +27,10 @@ const auth = computed(() => page.props.auth);
 
 function cycleTheme() {
     const order = ['light', 'dark', 'system'] as const;
-    const next = order[(order.indexOf(appearance.value as typeof order[number]) + 1) % 3];
+    const next =
+        order[
+            (order.indexOf(appearance.value as (typeof order)[number]) + 1) % 3
+        ];
     updateAppearance(next);
 }
 
@@ -33,7 +39,10 @@ const themeIcons = { light: Sun, dark: Moon, system: SunMoon } as const;
 const showSearch = ref(false);
 
 function onKeydown(e: KeyboardEvent) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); showSearch.value = true; }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        showSearch.value = true;
+    }
 }
 
 onMounted(() => document.addEventListener('keydown', onKeydown));
@@ -41,7 +50,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-    <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border/70 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header
+        class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-sidebar-border/70 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+    >
         <div class="flex items-center gap-2">
             <SidebarTrigger class="-ml-1" />
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
@@ -57,7 +68,10 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
             >
                 <Search class="h-3.5 w-3.5" />
                 <span>Search…</span>
-                <kbd class="ml-2 rounded border border-sidebar-border px-1 py-0.5 font-mono text-[10px]">⌘K</kbd>
+                <kbd
+                    class="ml-2 rounded border border-sidebar-border px-1 py-0.5 font-mono text-[10px]"
+                    >⌘K</kbd
+                >
             </button>
             <!-- Search icon (mobile) -->
             <button
@@ -73,7 +87,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
                 class="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 :title="`Theme: ${appearance}`"
             >
-                <component :is="themeIcons[appearance as keyof typeof themeIcons] ?? SunMoon" class="h-4 w-4" />
+                <component
+                    :is="
+                        themeIcons[appearance as keyof typeof themeIcons] ??
+                        SunMoon
+                    "
+                    class="h-4 w-4"
+                />
             </button>
 
             <!-- Notification bell -->
@@ -82,20 +102,24 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
             <!-- User Profile Dropdown -->
             <DropdownMenu>
                 <DropdownMenuTrigger :as-child="true">
-                    <button class="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                    <button
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    >
                         <Avatar class="h-6 w-6 overflow-hidden rounded-full">
                             <AvatarImage
                                 v-if="auth.user.avatar"
                                 :src="auth.user.avatar"
                                 :alt="auth.user.name"
                             />
-                            <AvatarFallback class="rounded-full bg-neutral-200 text-[10px] font-semibold text-black dark:bg-neutral-700 dark:text-white">
+                            <AvatarFallback
+                                class="rounded-full bg-neutral-200 text-[10px] font-semibold text-black dark:bg-neutral-700 dark:text-white"
+                            >
                                 {{ getInitials(auth.user?.name) }}
                             </AvatarFallback>
                         </Avatar>
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" class="w-56 mt-2">
+                <DropdownMenuContent align="end" class="mt-2 w-56">
                     <UserMenuContent :user="auth.user" />
                 </DropdownMenuContent>
             </DropdownMenu>

@@ -60,10 +60,5 @@ return [
         'price_family' => env('STRIPE_PRICE_FAMILY'),
     ],
 
-    'exchange_rates' => [
-        'enabled' => env('EXCHANGE_RATES_ENABLED', true),
-        'url' => env('EXCHANGE_RATES_URL', 'https://open.er-api.com/v6/latest/PKR'),
-        'cache_hours' => env('EXCHANGE_RATES_CACHE_HOURS', 12),
-    ],
 
 ];

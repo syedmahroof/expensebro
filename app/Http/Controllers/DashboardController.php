@@ -34,31 +34,24 @@ class DashboardController extends Controller
 
         $totalExpenses = $user->transactions()
             ->where('type', 'expense')
-            ->whereDate('date', '>=', $thisMonth)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0;
+            ->whereDate('date', '>=', $thisMonth)->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->toArray();
 
         $totalIncome = $user->transactions()
             ->where('type', 'income')
-            ->whereDate('date', '>=', $thisMonth)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0;
+            ->whereDate('date', '>=', $thisMonth)->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->toArray();
 
         $lastMonthExpenses = $user->transactions()
             ->where('type', 'expense')
             ->whereDate('date', '>=', $lastMonth)
-            ->whereDate('date', '<=', $lastMonthEnd)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0;
+            ->whereDate('date', '<=', $lastMonthEnd)->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->toArray();
 
-        $netWorth = $user->wallets()->where('is_active', true)->sum('balance');
+        $netWorth = $user->wallets()->where('is_active', true)->selectRaw('currency, SUM(balance) as total')->groupBy('currency')->pluck('total', 'currency')->toArray();
 
         $categoryBreakdown = $user->transactions()
             ->with('category:id,name,color')
             ->where('type', 'expense')
             ->whereDate('date', '>=', $thisMonth)
-            ->selectRaw('category_id, SUM(COALESCE(converted_amount, amount)) as total')
-            ->groupBy('category_id')
+            ->selectRaw('category_id, currency, SUM(amount) as total')->groupBy('category_id', 'currency')
             ->orderByDesc('total')
             ->limit(6)
             ->get();
@@ -67,39 +60,72 @@ class DashboardController extends Controller
             ->whereDate('date', '>=', $thisMonth)
             ->count();
 
+        $avgDailySpend = [];
+        $balance = [];
+        $expenseChange = [];
+        $savingsRate = [];
+
         $daysIntoMonth = now()->day;
-        $avgDailySpend = $daysIntoMonth > 0 ? round((float) $totalExpenses / $daysIntoMonth, 0) : 0;
+        $allCurrencies = collect(array_keys($totalIncome))->merge(array_keys($totalExpenses))->unique();
+        foreach ($allCurrencies as $c) {
+            $inc = $totalIncome[$c] ?? 0;
+            $exp = $totalExpenses[$c] ?? 0;
+            $balance[$c] = $inc - $exp;
+            $savingsRate[$c] = $inc > 0 ? round((($inc - $exp) / $inc) * 100, 1) : 0;
+            $avgDailySpend[$c] = $daysIntoMonth > 0 ? round($exp / $daysIntoMonth, 0) : 0;
 
-        $expenseChange = $lastMonthExpenses > 0
-            ? round((((float) $totalExpenses - (float) $lastMonthExpenses) / (float) $lastMonthExpenses) * 100, 1)
-            : 0;
+            $lastExp = $lastMonthExpenses[$c] ?? 0;
+            $expenseChange[$c] = $lastExp > 0 ? round((($exp - $lastExp) / $lastExp) * 100, 1) : 0;
+        }
 
-        // Yesterday's summary
+                // Yesterday's summary
         $yesterday = now()->subDay();
         $yesterdayExpenses = $user->transactions()
             ->where('type', 'expense')
-            ->whereDate('date', $yesterday)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total, COUNT(*) as count')
-            ->first();
+            ->whereDate('date', $yesterday)->selectRaw('currency, SUM(amount) as total, COUNT(*) as count')->groupBy('currency')->get();
         $yesterdayIncome = $user->transactions()
             ->where('type', 'income')
-            ->whereDate('date', $yesterday)
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0;
+            ->whereDate('date', $yesterday)->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->toArray();
 
-        $unsettledLoans = $user->loans()->whereNull('settled_at')->get();
-        $totalLent = (float) $unsettledLoans->where('type', 'lent')->sum(fn ($l) => $l->converted_amount ?? $l->amount);
-        $totalBorrowed = (float) $unsettledLoans->where('type', 'borrowed')->sum(fn ($l) => $l->converted_amount ?? $l->amount);
+        $yesterdaySummary = [];
+        $yCurrencies = $yesterdayExpenses->pluck('currency')->merge(array_keys($yesterdayIncome))->unique();
+        foreach ($yCurrencies as $c) {
+            $yExp = $yesterdayExpenses->firstWhere('currency', $c);
+            $yesterdaySummary[$c] = [
+                'expenses' => (float) ($yExp->total ?? 0),
+                'count' => (int) ($yExp->count ?? 0),
+                'income' => (float) ($yesterdayIncome[$c] ?? 0),
+            ];
+        }
+
+                $unsettledLoans = $user->loans()->whereNull('settled_at')->get();
+        $totalLent = $unsettledLoans->where('type', 'lent')->groupBy('currency')->map->sum('amount')->toArray();
+        $totalBorrowed = $unsettledLoans->where('type', 'borrowed')->groupBy('currency')->map->sum('amount')->toArray();
+
+        $netPosition = [];
+        $loanCurrencies = collect(array_keys($totalLent))->merge(array_keys($totalBorrowed))->unique();
+        foreach ($loanCurrencies as $c) {
+            $netPosition[$c] = ($totalLent[$c] ?? 0) - ($totalBorrowed[$c] ?? 0);
+        }
+
+        
+        
+
+        
+
+
+
+
 
         return Inertia::render('Dashboard', [
             'wallets' => $wallets,
             'recentTransactions' => $recentTransactions,
             'stats' => [
-                'totalExpenses' => (float) $totalExpenses,
-                'totalIncome' => (float) $totalIncome,
-                'balance' => (float) ($totalIncome - $totalExpenses),
-                'netWorth' => (float) $netWorth,
-                'savingsRate' => $totalIncome > 0 ? round((((float) $totalIncome - (float) $totalExpenses) / (float) $totalIncome) * 100, 1) : 0,
+                'totalExpenses' => $totalExpenses,
+                'totalIncome' => $totalIncome,
+                'balance' => $balance,
+                'netWorth' => $netWorth,
+                'savingsRate' => $savingsRate,
                 'avgDailySpend' => $avgDailySpend,
                 'txCount' => $txCountThisMonth,
                 'expenseChange' => $expenseChange,
@@ -108,13 +134,11 @@ class DashboardController extends Controller
             'loans' => [
                 'totalLent' => $totalLent,
                 'totalBorrowed' => $totalBorrowed,
-                'netPosition' => $totalLent - $totalBorrowed,
+                'netPosition' => $netPosition,
                 'count' => $unsettledLoans->count(),
             ],
             'yesterday' => [
-                'expenses' => (float) ($yesterdayExpenses->total ?? 0),
-                'income' => (float) $yesterdayIncome,
-                'count' => (int) ($yesterdayExpenses->count ?? 0),
+                'summary' => $yesterdaySummary,
                 'date' => $yesterday->toDateString(),
             ],
             'entityBreakdown' => Inertia::defer(function () use ($user, $thisMonth) {

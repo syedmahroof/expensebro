@@ -30,7 +30,9 @@ const providers = [
                 <div class="w-full border-t border-border" />
             </div>
             <div class="relative flex justify-center text-xs uppercase">
-                <span class="bg-background px-2 text-muted-foreground">{{ label ?? 'or continue with' }}</span>
+                <span class="bg-background px-2 text-muted-foreground">{{
+                    label ?? 'or continue with'
+                }}</span>
             </div>
         </div>
 

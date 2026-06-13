@@ -24,9 +24,9 @@ test('returns dashboard stats for the current month', function () {
     $this->getJson('/api/v1/dashboard')
         ->assertOk()
         ->assertJsonPath('currency', 'PKR')
-        ->assertJsonPath('stats.total_expenses', 300)
-        ->assertJsonPath('stats.total_income', 1000)
-        ->assertJsonPath('stats.balance', 700)
+        ->assertJsonPath('stats.total_expenses.PKR', 300)
+        ->assertJsonPath('stats.total_income.PKR', 1000)
+        ->assertJsonPath('stats.balance.PKR', 700)
         ->assertJsonCount(1, 'wallets')
         ->assertJsonCount(2, 'recent_transactions')
         ->assertJsonStructure([
@@ -53,7 +53,7 @@ test('dashboard only counts the authenticated user\'s data', function () {
 
     $this->getJson('/api/v1/dashboard')
         ->assertOk()
-        ->assertJsonPath('stats.total_expenses', 100);
+        ->assertJsonPath('stats.total_expenses.PKR', 100);
 });
 
 test('dashboard requires authentication', function () {

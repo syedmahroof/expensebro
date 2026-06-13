@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\CurrencyService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -44,7 +43,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'userCurrency' => $request->user()?->default_currency ?? 'PKR',
             'userLocale' => $request->user()?->locale ?? 'en',
-            'currencies' => CurrencyService::supported(),
+            'currencies' => config('currencies.supported'),
             'needsCurrencySetup' => $request->user() !== null && $request->user()->default_currency === null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

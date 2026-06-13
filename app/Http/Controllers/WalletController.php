@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Wallet;
-use App\Services\CurrencyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +29,7 @@ class WalletController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'type' => 'required|in:cash,bank,card,crypto,other',
-            'currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
+            'currency' => ['required', 'string', Rule::in(array_keys(config('currencies.supported')))],
             'balance' => 'required|numeric',
             'color' => 'required|string|size:7',
             'icon' => 'required|string|max:50',
@@ -53,7 +52,7 @@ class WalletController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'type' => 'required|in:cash,bank,card,crypto,other',
-            'currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
+            'currency' => ['required', 'string', Rule::in(array_keys(config('currencies.supported')))],
             'color' => 'required|string|size:7',
             'icon' => 'required|string|max:50',
             'is_default' => 'boolean',

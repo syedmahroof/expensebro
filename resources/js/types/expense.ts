@@ -67,7 +67,14 @@ export interface MerchantGroup {
     income_amount: number;
 }
 
-export type EntityType = 'vehicle' | 'office' | 'team' | 'house' | 'children' | 'property' | 'other';
+export type EntityType =
+    | 'vehicle'
+    | 'office'
+    | 'team'
+    | 'house'
+    | 'children'
+    | 'property'
+    | 'other';
 
 export interface Entity {
     id: number;

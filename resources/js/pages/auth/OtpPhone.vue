@@ -22,16 +22,24 @@ defineOptions({
     <Head title="WhatsApp Login" />
 
     <div class="mb-6 flex justify-center">
-        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/20">
+        <div
+            class="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/20"
+        >
             <MessageCircle class="h-7 w-7 text-green-500" />
         </div>
     </div>
 
-    <Form v-bind="send.form()" v-slot="{ errors, processing }" class="flex flex-col gap-5">
+    <Form
+        v-bind="send.form()"
+        v-slot="{ errors, processing }"
+        class="flex flex-col gap-5"
+    >
         <div class="grid gap-2">
             <Label for="phone">WhatsApp Number</Label>
             <div class="relative">
-                <Phone class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Phone
+                    class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                />
                 <Input
                     id="phone"
                     name="phone"
@@ -43,11 +51,17 @@ defineOptions({
                     autocomplete="tel"
                 />
             </div>
-            <p class="text-muted-foreground text-xs">Include country code (e.g. +92 for Pakistan)</p>
+            <p class="text-xs text-muted-foreground">
+                Include country code (e.g. +92 for Pakistan)
+            </p>
             <InputError :message="errors.phone" />
         </div>
 
-        <Button type="submit" class="w-full bg-green-600 hover:bg-green-500" :disabled="processing">
+        <Button
+            type="submit"
+            class="w-full bg-green-600 hover:bg-green-500"
+            :disabled="processing"
+        >
             <Spinner v-if="processing" />
             Send OTP via WhatsApp
         </Button>

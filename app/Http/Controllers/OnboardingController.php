@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CurrencyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,7 +15,7 @@ class OnboardingController extends Controller
     public function storeCurrency(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'default_currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
+            'default_currency' => ['required', 'string', Rule::in(array_keys(config('currencies.supported')))],
         ]);
 
         $user = $request->user();

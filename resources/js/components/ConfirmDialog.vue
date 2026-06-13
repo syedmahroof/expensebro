@@ -5,8 +5,12 @@ import { useConfirm } from '@/composables/useConfirm';
 const { state, handleConfirm, handleCancel } = useConfirm();
 
 function onKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') { handleCancel(); }
-    if (e.key === 'Enter') { handleConfirm(); }
+    if (e.key === 'Escape') {
+        handleCancel();
+    }
+    if (e.key === 'Enter') {
+        handleConfirm();
+    }
 }
 </script>
 
@@ -43,25 +47,43 @@ function onKeydown(e: KeyboardEvent) {
                         <div class="flex items-start gap-3 p-5 pb-4">
                             <div
                                 class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                :class="state.danger ? 'bg-red-500/15' : 'bg-blue-500/15'"
+                                :class="
+                                    state.danger
+                                        ? 'bg-red-500/15'
+                                        : 'bg-blue-500/15'
+                                "
                             >
-                                <AlertTriangle v-if="state.danger" class="h-4.5 w-4.5 text-red-400" />
-                                <HelpCircle v-else class="h-4.5 w-4.5 text-blue-400" />
+                                <AlertTriangle
+                                    v-if="state.danger"
+                                    class="h-4.5 w-4.5 text-red-400"
+                                />
+                                <HelpCircle
+                                    v-else
+                                    class="h-4.5 w-4.5 text-blue-400"
+                                />
                             </div>
                             <div class="min-w-0 flex-1">
-                                <p class="font-semibold leading-tight">{{ state.title }}</p>
-                                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{{ state.message }}</p>
+                                <p class="leading-tight font-semibold">
+                                    {{ state.title }}
+                                </p>
+                                <p
+                                    class="mt-1 text-sm leading-relaxed text-muted-foreground"
+                                >
+                                    {{ state.message }}
+                                </p>
                             </div>
                             <button
                                 @click="handleCancel"
-                                class="-mr-1 -mt-1 shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                class="-mt-1 -mr-1 shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                             >
                                 <X class="h-4 w-4" />
                             </button>
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex gap-2.5 border-t border-sidebar-border/50 px-5 py-4">
+                        <div
+                            class="flex gap-2.5 border-t border-sidebar-border/50 px-5 py-4"
+                        >
                             <button
                                 type="button"
                                 @click="handleCancel"
@@ -73,9 +95,11 @@ function onKeydown(e: KeyboardEvent) {
                                 type="button"
                                 @click="handleConfirm"
                                 class="flex-1 rounded-xl py-2.5 text-sm font-semibold text-white shadow-md transition-colors"
-                                :class="state.danger
-                                    ? 'bg-red-600 shadow-red-500/20 hover:bg-red-500'
-                                    : 'bg-primary shadow-primary/20 hover:bg-primary/90'"
+                                :class="
+                                    state.danger
+                                        ? 'bg-red-600 shadow-red-500/20 hover:bg-red-500'
+                                        : 'bg-primary shadow-primary/20 hover:bg-primary/90'
+                                "
                             >
                                 {{ state.confirmText }}
                             </button>

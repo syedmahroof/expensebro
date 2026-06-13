@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
-use App\Services\CurrencyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -62,15 +61,7 @@ class TransactionController extends Controller
 
         $validated['currency'] = $txCurrency;
 
-        if ($txCurrency !== $defaultCurrency) {
-            $validated['converted_amount'] = CurrencyService::convert((float) $validated['amount'], $txCurrency, $defaultCurrency);
-            $validated['converted_currency'] = $defaultCurrency;
-            $validated['exchange_rate'] = CurrencyService::rate($txCurrency, $defaultCurrency);
-        } else {
-            $validated['converted_amount'] = $validated['amount'];
-            $validated['converted_currency'] = $defaultCurrency;
-            $validated['exchange_rate'] = 1.0;
-        }
+        
 
         $transaction = $user->transactions()->create($validated);
         $this->updateWalletBalance($transaction);

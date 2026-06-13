@@ -17,7 +17,7 @@ test('returns analytics with trend, breakdown and stats', function () {
     $this->getJson('/api/v1/analytics')
         ->assertOk()
         ->assertJsonPath('currency', 'PKR')
-        ->assertJsonPath('stats.this_month', 500)
+        ->assertJsonPath('stats.this_month.PKR', 500)
         ->assertJsonCount(6, 'monthly_trend')
         ->assertJsonCount(1, 'wallet_breakdown')
         ->assertJsonStructure([
@@ -44,7 +44,7 @@ test('analytics only includes the authenticated user', function () {
 
     $this->getJson('/api/v1/analytics')
         ->assertOk()
-        ->assertJsonPath('stats.this_month', 100)
+        ->assertJsonPath('stats.this_month.PKR', 100)
         ->assertJsonPath('stats.total_transactions', 1);
 });
 

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
-use App\Services\CurrencyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,7 +16,7 @@ class PreferenceController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'currencies' => CurrencyService::supported(),
+            'currencies' => config('currencies.supported'),
             'locales' => [
                 'en' => 'English',
                 'ur' => 'اردو (Urdu)',
@@ -36,7 +35,7 @@ class PreferenceController extends Controller
     public function update(Request $request): UserResource
     {
         $validated = $request->validate([
-            'default_currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
+            'default_currency' => ['required', 'string', Rule::in(array_keys(config('currencies.supported')))],
             'locale' => ['sometimes', 'string', 'max:10'],
         ]);
 

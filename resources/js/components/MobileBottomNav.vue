@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BarChart3, CreditCard, LayoutGrid, MapPin, Users, Wallet } from 'lucide-vue-next';
+import {
+    BarChart3,
+    CreditCard,
+    LayoutGrid,
+    MapPin,
+    Users,
+    Wallet,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 import { analytics, dashboard } from '@/routes';
 import { index as groupsIndex } from '@/routes/groups';
@@ -18,26 +25,49 @@ function isActive(href: string | { url: string }) {
 
 const items = [
     { label: 'Home', href: dashboard(), icon: LayoutGrid, color: '#6366f1' },
-    { label: 'Spend', href: transactionsIndex(), icon: CreditCard, color: '#10b981' },
+    {
+        label: 'Spend',
+        href: transactionsIndex(),
+        icon: CreditCard,
+        color: '#10b981',
+    },
     { label: 'Wallets', href: walletsIndex(), icon: Wallet, color: '#f59e0b' },
     { label: 'Trips', href: tripsIndex(), icon: MapPin, color: '#f43f5e' },
     { label: 'Groups', href: groupsIndex(), icon: Users, color: '#f97316' },
-    { label: 'Analytics', href: analytics(), icon: BarChart3, color: '#8b5cf6' },
+    {
+        label: 'Analytics',
+        href: analytics(),
+        icon: BarChart3,
+        color: '#8b5cf6',
+    },
 ];
 </script>
 
 <template>
-    <nav class="fixed bottom-0 left-0 right-0 z-40 flex items-center border-t border-sidebar-border/70 bg-sidebar md:hidden" style="padding-bottom: env(safe-area-inset-bottom)">
+    <nav
+        class="fixed right-0 bottom-0 left-0 z-40 flex items-center border-t border-sidebar-border/70 bg-sidebar md:hidden"
+        style="padding-bottom: env(safe-area-inset-bottom)"
+    >
         <Link
             v-for="item in items"
             :key="typeof item.href === 'string' ? item.href : item.href.url"
             :href="item.href"
             class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors"
-            :class="isActive(item.href)
-                ? 'text-primary'
-                : 'text-sidebar-foreground/50 hover:text-sidebar-foreground'"
+            :class="
+                isActive(item.href)
+                    ? 'text-primary'
+                    : 'text-sidebar-foreground/50 hover:text-sidebar-foreground'
+            "
         >
-            <component :is="item.icon" class="h-5 w-5" :style="{ color: item.color }" :class="{ 'opacity-100': isActive(item.href), 'opacity-60': !isActive(item.href) }" />
+            <component
+                :is="item.icon"
+                class="h-5 w-5"
+                :style="{ color: item.color }"
+                :class="{
+                    'opacity-100': isActive(item.href),
+                    'opacity-60': !isActive(item.href),
+                }"
+            />
             {{ item.label }}
         </Link>
     </nav>

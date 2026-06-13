@@ -23,13 +23,16 @@ const props = defineProps<{ phone: string }>();
     <Head title="Verify OTP" />
 
     <div class="mb-6 flex justify-center">
-        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/20">
+        <div
+            class="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-500/20"
+        >
             <MessageCircle class="h-7 w-7 text-green-500" />
         </div>
     </div>
 
     <p class="mb-6 text-center text-sm text-muted-foreground">
-        Code sent to <span class="font-semibold text-foreground">{{ phone }}</span>
+        Code sent to
+        <span class="font-semibold text-foreground">{{ phone }}</span>
     </p>
 
     <Form
@@ -52,12 +55,16 @@ const props = defineProps<{ phone: string }>();
                 autofocus
                 autocomplete="one-time-code"
                 placeholder="000000"
-                class="h-12 w-full rounded-lg border border-input bg-background text-center text-2xl font-bold tracking-[0.5em] outline-none transition focus:ring-1 focus:ring-ring"
+                class="h-12 w-full rounded-lg border border-input bg-background text-center text-2xl font-bold tracking-[0.5em] transition outline-none focus:ring-1 focus:ring-ring"
             />
             <InputError :message="errors.code" />
         </div>
 
-        <Button type="submit" class="w-full bg-green-600 hover:bg-green-500" :disabled="processing">
+        <Button
+            type="submit"
+            class="w-full bg-green-600 hover:bg-green-500"
+            :disabled="processing"
+        >
             <Spinner v-if="processing" />
             Verify &amp; Login
         </Button>

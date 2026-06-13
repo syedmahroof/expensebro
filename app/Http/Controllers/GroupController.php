@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Group;
 use App\Models\GroupExpense;
 use App\Models\GroupExpenseSplit;
-use App\Services\CurrencyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,13 +27,13 @@ class GroupController extends Controller
                 'description' => $group->description,
                 'currency' => $group->currency,
                 'members_count' => $group->members_count,
-                'total_expenses' => (float) $group->expenses->sum(fn ($e) => $e->converted_amount ?? $e->amount),
+                'total_expenses' => $group->expenses->groupBy('currency')->map->sum('amount')->toArray(),
                 'created_at' => $group->created_at,
             ]);
 
         return Inertia::render('Groups/Index', [
             'groups' => $groups,
-            'currencies' => CurrencyService::supported(),
+            'currencies' => config('currencies.supported'),
         ]);
     }
 
@@ -103,7 +102,7 @@ class GroupController extends Controller
             'members' => $group->members->map(fn ($m) => ['id' => $m->id, 'name' => $m->name, 'phone' => $m->phone]),
             'expenses' => $expenses,
             'balances' => $group->balances(),
-            'currencies' => CurrencyService::supported(),
+            'currencies' => config('currencies.supported'),
             'defaultCurrency' => Auth::user()->default_currency ?? 'PKR',
         ]);
     }
@@ -137,15 +136,12 @@ class GroupController extends Controller
         $currency = strtoupper($validated['currency'] ?? $group->currency);
         $defaultCurrency = strtoupper($user->default_currency ?? 'PKR');
 
-        $convertedAmount = $currency !== $defaultCurrency
-            ? CurrencyService::convert((float) $validated['amount'], $currency, $defaultCurrency)
-            : $validated['amount'];
+        
 
         $expense = $group->expenses()->create([
             'paid_by_member_id' => $validated['paid_by_member_id'],
             'amount' => $validated['amount'],
             'currency' => $currency,
-            'converted_amount' => $convertedAmount,
             'description' => $validated['description'],
             'date' => $validated['date'],
             'notes' => $validated['notes'] ?? null,

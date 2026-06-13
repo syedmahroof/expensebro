@@ -20,12 +20,14 @@ class AnalyticsController extends Controller
         $monthlyTrend = collect(range(5, 0))->map(function ($m) use ($user) {
             $month = now()->subMonths($m);
 
-            $sum = fn (string $type) => (float) ($user->transactions()
+            $sum = fn (string $type) => $user->transactions()
                 ->where('type', $type)
                 ->whereYear('date', $month->year)
                 ->whereMonth('date', $month->month)
-                ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-                ->value('total') ?? 0);
+                ->selectRaw('currency, SUM(amount) as total')
+                ->groupBy('currency')
+                ->pluck('total', 'currency')
+                ->toArray();
 
             return [
                 'month' => $month->format('M'),
@@ -39,14 +41,13 @@ class AnalyticsController extends Controller
             ->with('category:id,name,color')
             ->where('type', 'expense')
             ->whereDate('date', '>=', now()->startOfMonth())
-            ->selectRaw('category_id, SUM(COALESCE(converted_amount, amount)) as total, COUNT(*) as count')
-            ->groupBy('category_id')
+            ->selectRaw('category_id, currency, SUM(amount) as total, COUNT(*) as count')->groupBy('category_id', 'currency')
             ->orderByDesc('total')
             ->get()
             ->map(fn ($row) => [
                 'name' => $row->category?->name ?? 'Uncategorized',
                 'color' => $row->category?->color ?? '#6b7280',
-                'total' => (float) $row->total,
+                'currency' => $row->currency, 'total' => (float) $row->total,
                 'count' => (int) $row->count,
             ]);
 
@@ -54,29 +55,40 @@ class AnalyticsController extends Controller
             ->with('merchant:id,name')
             ->whereNotNull('merchant_id')
             ->where('type', 'expense')
-            ->selectRaw('merchant_id, SUM(COALESCE(converted_amount, amount)) as total, COUNT(*) as count')
-            ->groupBy('merchant_id')
+            ->selectRaw('merchant_id, currency, SUM(amount) as total, COUNT(*) as count')->groupBy('merchant_id', 'currency')
             ->orderByDesc('total')
             ->limit(5)
             ->get()
             ->map(fn ($row) => [
                 'name' => $row->merchant?->name ?? 'Unknown',
-                'total' => (float) $row->total,
+                'currency' => $row->currency, 'total' => (float) $row->total,
                 'count' => (int) $row->count,
             ]);
 
-        $thisMonth = (float) ($user->transactions()
+        $thisMonth = $user->transactions()
             ->where('type', 'expense')
             ->whereDate('date', '>=', now()->startOfMonth())
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('currency, SUM(amount) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
 
-        $lastMonth = (float) ($user->transactions()
+        $lastMonth = $user->transactions()
             ->where('type', 'expense')
             ->whereDate('date', '>=', now()->subMonth()->startOfMonth())
             ->whereDate('date', '<=', now()->subMonth()->endOfMonth())
-            ->selectRaw('SUM(COALESCE(converted_amount, amount)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('currency, SUM(amount) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency')
+            ->toArray();
+
+        $change = [];
+        $allCurrencies = collect(array_keys($thisMonth))->merge(array_keys($lastMonth))->unique();
+        foreach ($allCurrencies as $c) {
+            $t = $thisMonth[$c] ?? 0;
+            $l = $lastMonth[$c] ?? 0;
+            $change[$c] = $l > 0 ? round((($t - $l) / $l) * 100, 1) : 0;
+        }
 
         return response()->json([
             'currency' => $currency,
@@ -89,7 +101,7 @@ class AnalyticsController extends Controller
             'stats' => [
                 'this_month' => $thisMonth,
                 'last_month' => $lastMonth,
-                'change' => $lastMonth > 0 ? round((($thisMonth - $lastMonth) / $lastMonth) * 100, 1) : 0,
+                'change' => $change,
                 'total_transactions' => $user->transactions()->count(),
             ],
         ]);

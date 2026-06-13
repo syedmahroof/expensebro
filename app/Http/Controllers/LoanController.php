@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Loan;
-use App\Services\CurrencyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +30,12 @@ class LoanController extends Controller
             'lent' => $lent->values(),
             'borrowed' => $borrowed->values(),
             'summary' => [
-                'totalLent' => (float) $lent->where('settled_at', null)->sum(fn ($l) => $l->converted_amount ?? $l->amount),
-                'totalBorrowed' => (float) $borrowed->where('settled_at', null)->sum(fn ($l) => $l->converted_amount ?? $l->amount),
+                'totalLent' => $lent->where('settled_at', null)->groupBy('currency')->map->sum('amount')->toArray(),
+                'totalBorrowed' => $borrowed->where('settled_at', null)->groupBy('currency')->map->sum('amount')->toArray(),
                 'settledCount' => $loans->whereNotNull('settled_at')->count(),
             ],
             'defaultCurrency' => $defaultCurrency,
-            'currencies' => CurrencyService::supported(),
+            'currencies' => config('currencies.supported'),
         ]);
     }
 
@@ -58,9 +57,7 @@ class LoanController extends Controller
         $defaultCurrency = strtoupper($user->default_currency ?? 'PKR');
 
         $validated['currency'] = $currency;
-        $validated['converted_amount'] = $currency !== $defaultCurrency
-            ? CurrencyService::convert((float) $validated['amount'], $currency, $defaultCurrency)
-            : $validated['amount'];
+        
 
         $user->loans()->create($validated);
 

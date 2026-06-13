@@ -28,8 +28,16 @@ const { isCurrentUrl } = useCurrentUrl();
                     :tooltip="item.title"
                 >
                     <Link :href="item.href">
-                        <div v-if="item.icon" class="flex h-6 w-6 items-center justify-center rounded-md" :style="{ backgroundColor: item.color + '15' }">
-                            <component :is="item.icon" class="h-4 w-4" :style="{ color: item.color }" />
+                        <div
+                            v-if="item.icon"
+                            class="flex h-6 w-6 items-center justify-center rounded-md"
+                            :style="{ backgroundColor: item.color + '15' }"
+                        >
+                            <component
+                                :is="item.icon"
+                                class="h-4 w-4"
+                                :style="{ color: item.color }"
+                            />
                         </div>
                         <span>{{ item.title }}</span>
                     </Link>

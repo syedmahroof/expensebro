@@ -33,8 +33,16 @@ defineProps<Props>();
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            <div v-if="item.icon" class="flex h-6 w-6 items-center justify-center rounded-md" :style="{ backgroundColor: item.color + '15' }">
-                                <component :is="item.icon" class="h-4 w-4" :style="{ color: item.color }" />
+                            <div
+                                v-if="item.icon"
+                                class="flex h-6 w-6 items-center justify-center rounded-md"
+                                :style="{ backgroundColor: item.color + '15' }"
+                            >
+                                <component
+                                    :is="item.icon"
+                                    class="h-4 w-4"
+                                    :style="{ color: item.color }"
+                                />
                             </div>
                             <span>{{ item.title }}</span>
                         </a>

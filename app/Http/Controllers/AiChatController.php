@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Transaction;
-use App\Services\CurrencyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,9 +53,7 @@ class AiChatController extends Controller
 
         $validated['currency'] = $currency;
         if ($currency !== $defaultCurrency) {
-            $validated['converted_amount'] = CurrencyService::convert((float) $validated['amount'], $currency, $defaultCurrency);
             $validated['converted_currency'] = $defaultCurrency;
-            $validated['exchange_rate'] = CurrencyService::rate($currency, $defaultCurrency);
         }
 
         $validated['ai_parsed'] = true;
