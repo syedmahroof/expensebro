@@ -2,16 +2,18 @@
 
 namespace App\Actions\Fortify;
 
+use App\Actions\CreateDefaultWallet;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
-use App\Models\Wallet;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules, ProfileValidationRules;
+
+    public function __construct(private CreateDefaultWallet $createDefaultWallet) {}
 
     /**
      * Validate and create a newly registered user.
@@ -31,17 +33,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $input['password'],
         ]);
 
-        Wallet::create([
-            'user_id' => $user->id,
-            'name' => 'Cash',
-            'type' => 'cash',
-            'currency' => 'PKR',
-            'balance' => 0,
-            'color' => '#10b981',
-            'icon' => 'wallet',
-            'is_default' => true,
-            'is_active' => true,
-        ]);
+        $this->createDefaultWallet->create($user);
 
         return $user;
     }

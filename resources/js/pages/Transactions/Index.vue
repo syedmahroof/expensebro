@@ -172,10 +172,10 @@ watch([selectedType, selectedCategory, selectedWallet, selectedMerchant, selecte
 
 // ── Add transaction modal ─────────────────────────────────────────────────────
 const showModal = ref(false);
-const page = usePage<{ userCurrency: string }>();
+const page = usePage<{ userCurrency: string; currencies: Record<string, string> }>();
 const defaultCurrency = computed(() => page.props.userCurrency ?? 'PKR');
 
-const CURRENCIES = ['PKR', 'USD', 'AED', 'EUR', 'GBP', 'SAR', 'CAD', 'AUD', 'JPY', 'CNY', 'INR', 'QAR', 'KWD', 'CHF', 'SGD', 'MYR', 'TRY'];
+const CURRENCIES = Object.keys(page.props.currencies ?? {});
 
 const form = useForm({
     wallet_id: props.wallets[0]?.id ?? '',

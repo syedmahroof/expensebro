@@ -20,8 +20,9 @@ defineOptions({
 
 defineProps<{ wallets: WalletType[] }>();
 
-const page = usePage<{ userCurrency: string }>();
+const page = usePage<{ userCurrency: string; currencies: Record<string, string> }>();
 const defaultCurrency = computed(() => page.props.userCurrency ?? 'PKR');
+const currencies = computed(() => page.props.currencies ?? {});
 
 const showModal = ref(false);
 const editingWallet = ref<WalletType | null>(null);
@@ -192,12 +193,7 @@ const walletColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8
                         <div>
                             <label class="mb-1.5 block text-sm font-medium">Currency</label>
                             <select v-model="form.currency" class="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-ring">
-                                <option value="PKR">PKR</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                                <option value="AED">AED</option>
-                                <option value="SAR">SAR</option>
+                                <option v-for="(name, code) in currencies" :key="code" :value="code">{{ code }} — {{ name }}</option>
                             </select>
                         </div>
                     </div>

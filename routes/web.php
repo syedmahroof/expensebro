@@ -1,17 +1,19 @@
 <?php
 
-use App\Http\Controllers\AiChatController;
-use App\Http\Controllers\EntityController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\Auth\SocialController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\SearchController;
-use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\EntityController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SubscriptionCheckoutController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\WalletController;
@@ -35,6 +37,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    Route::post('onboarding/currency', [OnboardingController::class, 'storeCurrency'])->name('onboarding.currency');
 
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('transactions/export', [TransactionController::class, 'export'])->name('transactions.export');
@@ -71,9 +75,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('trips/{trip}', [TripController::class, 'update'])->name('trips.update');
     Route::delete('trips/{trip}', [TripController::class, 'destroy'])->name('trips.destroy');
     Route::get('subscription', SubscriptionController::class)->name('subscription');
-    Route::post('subscription/checkout', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'checkout'])->name('subscription.checkout');
-    Route::get('subscription/success', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'success'])->name('subscription.success');
-    Route::get('subscription/portal', [\App\Http\Controllers\SubscriptionCheckoutController::class, 'portal'])->name('subscription.portal');
+    Route::post('subscription/checkout', [SubscriptionCheckoutController::class, 'checkout'])->name('subscription.checkout');
+    Route::get('subscription/success', [SubscriptionCheckoutController::class, 'success'])->name('subscription.success');
+    Route::get('subscription/portal', [SubscriptionCheckoutController::class, 'portal'])->name('subscription.portal');
 
     Route::get('entities', [EntityController::class, 'index'])->name('entities.index');
     Route::post('entities', [EntityController::class, 'store'])->name('entities.store');

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, useForm } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 import { CalendarDays, MapPin, Plus, Wallet, X } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -31,13 +31,16 @@ interface Trip {
 
 defineProps<{ trips: Trip[] }>();
 
+const page = usePage<{ userCurrency: string; currencies: Record<string, string> }>();
+const currencies = page.props.currencies ?? {};
+
 const showModal = ref(false);
 
 const form = useForm({
     name: '',
     destination: '',
     budget: '',
-    currency: 'PKR',
+    currency: page.props.userCurrency ?? 'PKR',
     start_date: '',
     end_date: '',
     notes: '',
@@ -222,12 +225,7 @@ const statusColors: Record<string, string> = {
                                 v-model="form.currency"
                                 class="w-full rounded-lg border border-sidebar-border/50 bg-sidebar-accent/30 px-3 py-2 text-sm outline-none focus:border-primary/60"
                             >
-                                <option value="PKR">PKR</option>
-                                <option value="USD">USD</option>
-                                <option value="AED">AED</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                                <option value="SAR">SAR</option>
+                                <option v-for="(name, code) in currencies" :key="code" :value="code">{{ code }} — {{ name }}</option>
                             </select>
                         </div>
                     </div>

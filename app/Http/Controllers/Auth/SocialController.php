@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\CreateDefaultWallet;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Wallet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -13,6 +13,8 @@ use Throwable;
 class SocialController extends Controller
 {
     private const ALLOWED_PROVIDERS = ['google', 'facebook', 'github'];
+
+    public function __construct(private CreateDefaultWallet $createDefaultWallet) {}
 
     public function redirect(string $provider): RedirectResponse
     {
@@ -43,7 +45,7 @@ class SocialController extends Controller
         );
 
         if ($user->wasRecentlyCreated) {
-            $this->createDefaultWallet($user->id);
+            $this->createDefaultWallet->create($user);
         }
 
         Auth::login($user, remember: true);
@@ -54,19 +56,5 @@ class SocialController extends Controller
     private function abortIfInvalidProvider(string $provider): void
     {
         abort_unless(in_array($provider, self::ALLOWED_PROVIDERS), 404);
-    }
-
-    private function createDefaultWallet(int $userId): void
-    {
-        Wallet::create([
-            'user_id' => $userId,
-            'name' => 'Cash',
-            'type' => 'cash',
-            'currency' => 'PKR',
-            'balance' => 0,
-            'color' => '#10b981',
-            'icon' => 'banknotes',
-            'is_default' => true,
-        ]);
     }
 }

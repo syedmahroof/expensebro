@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\CurrencyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,7 +31,7 @@ class PreferencesController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'default_currency' => ['required', 'string', 'max:10'],
+            'default_currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
             'locale' => ['required', 'string', 'max:10'],
         ]);
 

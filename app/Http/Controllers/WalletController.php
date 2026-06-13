@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Wallet;
+use App\Services\CurrencyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,14 +30,14 @@ class WalletController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'type' => 'required|in:cash,bank,card,crypto,other',
-            'currency' => 'required|string|size:3',
+            'currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
             'balance' => 'required|numeric',
             'color' => 'required|string|size:7',
             'icon' => 'required|string|max:50',
             'is_default' => 'boolean',
         ]);
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             Auth::user()->wallets()->update(['is_default' => false]);
         }
 
@@ -51,13 +53,13 @@ class WalletController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'type' => 'required|in:cash,bank,card,crypto,other',
-            'currency' => 'required|string|size:3',
+            'currency' => ['required', 'string', Rule::in(CurrencyService::codes())],
             'color' => 'required|string|size:7',
             'icon' => 'required|string|max:50',
             'is_default' => 'boolean',
         ]);
 
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             Auth::user()->wallets()->update(['is_default' => false]);
         }
 
