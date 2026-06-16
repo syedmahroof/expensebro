@@ -23,6 +23,7 @@ use Laravel\Fortify\Features;
 
 Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
+    'settings' => \App\Models\Setting::first(),
 ])->name('home');
 
 Route::middleware('guest')->group(function () {
@@ -88,8 +89,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
-    Route::middleware(AdminMiddleware::class)->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware([AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', AdminController::class)->name('index');
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'edit'])->name('settings.edit');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     });
 });
 
