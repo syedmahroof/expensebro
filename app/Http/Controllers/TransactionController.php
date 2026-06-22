@@ -38,6 +38,7 @@ class TransactionController extends Controller
         };
 
         $sharedProps = [
+            'wallets' => $user->wallets()->where('is_active', true)->get(['id', 'name', 'currency']),
             'categories' => Category::where(fn ($q) => $q->whereNull('user_id')->orWhere('user_id', $user->id))->get(['id', 'name', 'color', 'icon']),
             'merchants' => Merchant::where('user_id', $user->id)->get(['id', 'name']),
             'entities' => Entity::where('user_id', $user->id)->get(['id', 'name']),
@@ -57,6 +58,7 @@ class TransactionController extends Controller
                 ->get(['id', 'name', 'color', 'icon', 'type'])
                 ->map(function ($cat) use ($totals) {
                     $stats = $totals->get($cat->id, collect());
+
                     return array_merge($cat->toArray(), [
                         'transaction_count' => (int) $stats->sum('transaction_count'),
                         'expense_amount' => $stats->pluck('expense_amount', 'currency')->toArray(),
@@ -85,6 +87,7 @@ class TransactionController extends Controller
                 ->get(['id', 'name', 'logo', 'category_id'])
                 ->map(function ($m) use ($totals) {
                     $stats = $totals->get($m->id, collect());
+
                     return array_merge($m->toArray(), [
                         'transaction_count' => (int) $stats->sum('transaction_count'),
                         'expense_amount' => $stats->pluck('expense_amount', 'currency')->toArray(),
@@ -144,8 +147,6 @@ class TransactionController extends Controller
 
         $validated['currency'] = $txCurrency;
 
-        
-
         $transaction = $user->transactions()->create($validated);
 
         $this->updateWalletBalance($transaction);
@@ -179,17 +180,17 @@ class TransactionController extends Controller
                 $tx->amount,
                 $tx->currency ?? '',
                 $tx->converted_amount ?? $tx->amount,
-                '"' . str_replace('"', '""', $tx->description ?? '') . '"',
-                '"' . str_replace('"', '""', $tx->category?->name ?? '') . '"',
-                '"' . str_replace('"', '""', $tx->wallet?->name ?? '') . '"',
-                '"' . str_replace('"', '""', $tx->merchant?->name ?? '') . '"',
-                '"' . str_replace('"', '""', $tx->location ?? '') . '"',
-                '"' . str_replace('"', '""', $tx->notes ?? '') . '"',
+                '"'.str_replace('"', '""', $tx->description ?? '').'"',
+                '"'.str_replace('"', '""', $tx->category?->name ?? '').'"',
+                '"'.str_replace('"', '""', $tx->wallet?->name ?? '').'"',
+                '"'.str_replace('"', '""', $tx->merchant?->name ?? '').'"',
+                '"'.str_replace('"', '""', $tx->location ?? '').'"',
+                '"'.str_replace('"', '""', $tx->notes ?? '').'"',
             ]);
         }
 
         $csv = implode("\n", $lines);
-        $filename = 'transactions-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'transactions-'.now()->format('Y-m-d').'.csv';
 
         return response($csv, 200, [
             'Content-Type' => 'text/csv',
