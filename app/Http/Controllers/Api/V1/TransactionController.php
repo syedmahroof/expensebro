@@ -61,8 +61,6 @@ class TransactionController extends Controller
 
         $validated['currency'] = $txCurrency;
 
-        
-
         $transaction = $user->transactions()->create($validated);
         $this->updateWalletBalance($transaction);
 

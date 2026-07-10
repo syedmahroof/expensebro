@@ -81,9 +81,7 @@ test('a foreign-currency transaction is converted to the default currency', func
         'currency' => 'USD',
         'date' => now()->toDateString(),
     ])->assertCreated()
-        ->assertJsonPath('data.currency', 'USD')
-        
-        ;
+        ->assertJsonPath('data.currency', 'USD');
 });
 
 test('cannot create a transaction in another user\'s wallet', function () {

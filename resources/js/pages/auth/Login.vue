@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import SocialLoginButtons from '@/components/SocialLoginButtons.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
@@ -113,7 +113,7 @@ defineProps<{
 
     <SocialLoginButtons />
 
-    <a
+    <Link
         :href="otpPhone()"
         class="flex w-full items-center justify-center gap-2 rounded-lg border border-green-600/40 bg-green-600/10 py-2.5 text-sm font-medium text-green-500 transition-colors hover:bg-green-600/20"
     >
@@ -123,5 +123,5 @@ defineProps<{
             />
         </svg>
         Continue with WhatsApp
-    </a>
+    </Link>
 </template>

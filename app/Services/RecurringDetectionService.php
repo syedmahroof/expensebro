@@ -20,7 +20,7 @@ class RecurringDetectionService
 
         $groups = $transactions->groupBy(function ($tx) {
             return $tx->merchant_id
-                ? 'merchant_' . $tx->merchant_id
+                ? 'merchant_'.$tx->merchant_id
                 : strtolower(trim($tx->description ?? ''));
         })->filter(fn ($g) => $g->count() >= 2);
 

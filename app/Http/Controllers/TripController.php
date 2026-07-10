@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Trip;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,7 +61,7 @@ class TripController extends Controller
             ->groupBy(fn ($t) => $t->date->format('Y-m-d'))
             ->map(fn ($group, $date) => [
                 'date' => $date,
-                'label' => \Carbon\Carbon::parse($date)->format('d M'),
+                'label' => Carbon::parse($date)->format('d M'),
                 'amount' => $group->sum('amount'),
             ])
             ->sortKeys()

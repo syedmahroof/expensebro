@@ -24,7 +24,7 @@ class SpendingInsightService
 
         // Weekend vs weekday spending
         $weekend = $expenses->filter(fn ($t) => in_array(date('N', strtotime($t->date)), [6, 7]));
-        $weekday = $expenses->filter(fn ($t) => !in_array(date('N', strtotime($t->date)), [6, 7]));
+        $weekday = $expenses->filter(fn ($t) => ! in_array(date('N', strtotime($t->date)), [6, 7]));
 
         $weekendAvgDay = $weekend->count() > 0
             ? $weekend->sum(fn ($t) => (float) ($t->converted_amount ?? $t->amount)) / max(1, $weekend->groupBy(fn ($t) => $t->date)->count())
@@ -93,7 +93,7 @@ class SpendingInsightService
                 'type' => 'large_purchase',
                 'icon' => 'zap',
                 'title' => 'Large One-Time Purchase Detected',
-                'description' => "A transaction of " . number_format((float) ($large->converted_amount ?? $large->amount), 0) . " is 4× your average expense — was this planned?",
+                'description' => 'A transaction of '.number_format((float) ($large->converted_amount ?? $large->amount), 0).' is 4× your average expense — was this planned?',
                 'severity' => 'info',
                 'value' => (float) ($large->converted_amount ?? $large->amount),
             ];

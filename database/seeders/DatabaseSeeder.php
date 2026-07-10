@@ -9,6 +9,7 @@ use App\Models\PaymentLog;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -74,7 +75,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Collection<int, Category>  $categories
+     * @param  Collection<int, Category>  $categories
      */
     private function seedMerchantsAndTransactions(User $user, Wallet $cashWallet, Wallet $bankWallet, $categories): void
     {
@@ -190,7 +191,7 @@ class DatabaseSeeder extends Seeder
             ['title' => 'Salary received', 'body' => 'PKR 85,000 income recorded in Bank Account.', 'type' => 'success'],
             ['title' => 'Top spending: Food & Dining', 'body' => 'You\'ve spent PKR 8,500 on Food & Dining this month.', 'type' => 'info'],
             ['title' => 'Tip: Try AI Chat', 'body' => 'Upgrade to Now plan to log transactions via natural language.', 'type' => 'info'],
-            ['title' => 'Large expense detected', 'body' => 'PKR 12,000 spent at Carrefour on ' . now()->subDays(6)->format('M j') . '.', 'type' => 'warning'],
+            ['title' => 'Large expense detected', 'body' => 'PKR 12,000 spent at Carrefour on '.now()->subDays(6)->format('M j').'.', 'type' => 'warning'],
         ];
 
         foreach ($notifications as $i => $n) {
@@ -217,7 +218,7 @@ class DatabaseSeeder extends Seeder
                 'amount' => 1.00,
                 'currency' => 'USD',
                 'status' => 'paid',
-                'invoice_id' => 'INV-' . strtoupper(substr(md5($user->id . $monthsAgo), 0, 8)),
+                'invoice_id' => 'INV-'.strtoupper(substr(md5($user->id.$monthsAgo), 0, 8)),
                 'paid_at' => now()->subMonths($monthsAgo)->startOfMonth(),
             ]);
         }

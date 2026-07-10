@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
-use App\Models\Wallet;
 use App\Services\RecurringDetectionService;
 use App\Services\SpendingInsightService;
 use Illuminate\Http\Request;
@@ -78,7 +76,7 @@ class DashboardController extends Controller
             $expenseChange[$c] = $lastExp > 0 ? round((($exp - $lastExp) / $lastExp) * 100, 1) : 0;
         }
 
-                // Yesterday's summary
+        // Yesterday's summary
         $yesterday = now()->subDay();
         $yesterdayExpenses = $user->transactions()
             ->where('type', 'expense')
@@ -98,7 +96,7 @@ class DashboardController extends Controller
             ];
         }
 
-                $unsettledLoans = $user->loans()->whereNull('settled_at')->get();
+        $unsettledLoans = $user->loans()->whereNull('settled_at')->get();
         $totalLent = $unsettledLoans->where('type', 'lent')->groupBy('currency')->map->sum('amount')->toArray();
         $totalBorrowed = $unsettledLoans->where('type', 'borrowed')->groupBy('currency')->map->sum('amount')->toArray();
 
@@ -107,15 +105,6 @@ class DashboardController extends Controller
         foreach ($loanCurrencies as $c) {
             $netPosition[$c] = ($totalLent[$c] ?? 0) - ($totalBorrowed[$c] ?? 0);
         }
-
-        
-        
-
-        
-
-
-
-
 
         return Inertia::render('Dashboard', [
             'wallets' => $wallets,

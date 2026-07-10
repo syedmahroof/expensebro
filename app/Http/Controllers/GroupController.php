@@ -136,8 +136,6 @@ class GroupController extends Controller
         $currency = strtoupper($validated['currency'] ?? $group->currency);
         $defaultCurrency = strtoupper($user->default_currency ?? 'PKR');
 
-        
-
         $expense = $group->expenses()->create([
             'paid_by_member_id' => $validated['paid_by_member_id'],
             'amount' => $validated['amount'],

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\Transaction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,7 +73,7 @@ class AiChatController extends Controller
     {
         $apiKey = config('services.openai.key');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return $this->fallbackParse($message);
         }
 

@@ -4,7 +4,7 @@ import { Head } from '@inertiajs/vue3';
 import { Check, Globe, RefreshCw } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
-import { edit as editPreferences } from '@/routes/preferences';
+import { edit as editPreferences, update as updatePreferences } from '@/routes/preferences';
 
 defineOptions({
     layout: {
@@ -30,7 +30,7 @@ const form = useForm({
 });
 
 function submit() {
-    form.patch(editPreferences(), {
+    form.submit(updatePreferences(), {
         onSuccess: () => {
             saved.value = true;
             setTimeout(() => {

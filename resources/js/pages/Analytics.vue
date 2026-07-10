@@ -14,15 +14,18 @@ defineOptions({
     },
 });
 
+type CurrencyMap = Record<string, number | string>;
+
 const props = defineProps<{
     monthlyTrend: Array<{
         month: string;
         year: number;
-        expenses: number;
-        income: number;
+        expenses: CurrencyMap;
+        income: CurrencyMap;
     }>;
     categoryBreakdown: Array<{
         category_id: number | null;
+        currency: string;
         total: string;
         count: number;
         category: { id: number; name: string; color: string } | null;
@@ -37,14 +40,15 @@ const props = defineProps<{
     }>;
     topMerchants: Array<{
         merchant_id: number | null;
+        currency: string;
         total: string;
         count: number;
         merchant: { id: number; name: string } | null;
     }>;
     stats: {
-        thisMonth: number;
-        lastMonth: number;
-        change: number;
+        thisMonth: CurrencyMap;
+        lastMonth: CurrencyMap;
+        change: Record<string, number>;
         totalTransactions: number;
     };
 }>();
@@ -52,14 +56,39 @@ const props = defineProps<{
 const page = usePage<{ userCurrency: string }>();
 const currency = computed(() => page.props.userCurrency ?? 'PKR');
 
-const maxMonthlyExpense = computed(() =>
-    Math.max(...props.monthlyTrend.map((m) => m.expenses), 1),
+/** Sum all currency values of a currency-keyed map into a single number. */
+function sumMap(map: CurrencyMap | undefined): number {
+    if (!map) {
+        return 0;
+    }
+
+    return Object.values(map).reduce<number>((s, v) => s + Number(v), 0);
+}
+
+/** The currencies present in this/last month totals, in a stable order. */
+const statCurrencies = computed(() => {
+    const keys = new Set<string>([
+        ...Object.keys(props.stats.thisMonth ?? {}),
+        ...Object.keys(props.stats.lastMonth ?? {}),
+    ]);
+
+    return [...keys];
+});
+
+/** Monthly trend collapsed to a single comparable magnitude per month. */
+const trend = computed(() =>
+    props.monthlyTrend.map((m) => ({
+        ...m,
+        expenseTotal: sumMap(m.expenses),
+        incomeTotal: sumMap(m.income),
+    })),
 );
-const maxMonthlyIncome = computed(() =>
-    Math.max(...props.monthlyTrend.map((m) => m.income), 1),
-);
+
 const maxBar = computed(() =>
-    Math.max(maxMonthlyExpense.value, maxMonthlyIncome.value),
+    Math.max(
+        1,
+        ...trend.value.flatMap((m) => [m.expenseTotal, m.incomeTotal]),
+    ),
 );
 
 const totalCategoryAmount = computed(
@@ -91,8 +120,17 @@ function fmt(n: number, cur?: string) {
                     >
                     <TrendingDown class="h-4 w-4 text-red-400" />
                 </div>
-                <p class="text-xl font-bold text-red-400">
-                    {{ fmt(stats.thisMonth) }}
+                <template v-if="statCurrencies.length > 0">
+                    <p
+                        v-for="(amount, curr) in stats.thisMonth"
+                        :key="curr"
+                        class="text-xl font-bold text-red-400"
+                    >
+                        {{ fmt(Number(amount), curr) }}
+                    </p>
+                </template>
+                <p v-else class="text-xl font-bold text-red-400">
+                    {{ fmt(0) }}
                 </p>
             </div>
             <div class="rounded-xl border border-sidebar-border/50 bg-card p-5">
@@ -102,27 +140,43 @@ function fmt(n: number, cur?: string) {
                     >
                     <TrendingDown class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <p class="text-xl font-bold">{{ fmt(stats.lastMonth) }}</p>
+                <template v-if="statCurrencies.length > 0">
+                    <p
+                        v-for="(amount, curr) in stats.lastMonth"
+                        :key="curr"
+                        class="text-xl font-bold"
+                    >
+                        {{ fmt(Number(amount), curr) }}
+                    </p>
+                    <p
+                        v-if="Object.keys(stats.lastMonth).length === 0"
+                        class="text-xl font-bold"
+                    >
+                        {{ fmt(0) }}
+                    </p>
+                </template>
+                <p v-else class="text-xl font-bold">{{ fmt(0) }}</p>
             </div>
             <div class="rounded-xl border border-sidebar-border/50 bg-card p-5">
                 <div class="mb-2 flex items-center justify-between">
                     <span class="text-xs text-muted-foreground">Change</span>
-                    <TrendingUp
-                        class="h-4 w-4"
-                        :class="
-                            stats.change > 0
-                                ? 'text-red-400'
-                                : 'text-emerald-400'
-                        "
-                    />
+                    <TrendingUp class="h-4 w-4 text-muted-foreground" />
                 </div>
-                <p
-                    class="text-xl font-bold"
-                    :class="
-                        stats.change > 0 ? 'text-red-400' : 'text-emerald-400'
-                    "
-                >
-                    {{ stats.change > 0 ? '+' : '' }}{{ stats.change }}%
+                <template v-if="Object.keys(stats.change).length > 0">
+                    <p
+                        v-for="(pct, curr) in stats.change"
+                        :key="curr"
+                        class="text-xl font-bold"
+                        :class="pct > 0 ? 'text-red-400' : 'text-emerald-400'"
+                    >
+                        <span class="mr-1 text-[10px] text-muted-foreground">{{
+                            curr
+                        }}</span>
+                        {{ pct > 0 ? '+' : '' }}{{ pct }}%
+                    </p>
+                </template>
+                <p v-else class="text-xl font-bold text-muted-foreground">
+                    —
                 </p>
             </div>
             <div class="rounded-xl border border-sidebar-border/50 bg-card p-5">
@@ -146,7 +200,7 @@ function fmt(n: number, cur?: string) {
                 <h2 class="mb-5 text-sm font-semibold">6-Month Trend</h2>
                 <div class="flex h-40 items-end gap-3">
                     <div
-                        v-for="m in monthlyTrend"
+                        v-for="m in trend"
                         :key="m.month + m.year"
                         class="flex flex-1 flex-col items-center gap-1"
                     >
@@ -157,21 +211,15 @@ function fmt(n: number, cur?: string) {
                             <div
                                 class="w-3 rounded-t bg-red-400/70 transition-all"
                                 :style="{
-                                    height:
-                                        maxBar > 0
-                                            ? `${(m.expenses / maxBar) * 100}%`
-                                            : '4px',
-                                    minHeight: m.expenses > 0 ? '4px' : '0',
+                                    height: `${(m.expenseTotal / maxBar) * 100}%`,
+                                    minHeight: m.expenseTotal > 0 ? '4px' : '0',
                                 }"
                             />
                             <div
                                 class="w-3 rounded-t bg-emerald-400/70 transition-all"
                                 :style="{
-                                    height:
-                                        maxBar > 0
-                                            ? `${(m.income / maxBar) * 100}%`
-                                            : '4px',
-                                    minHeight: m.income > 0 ? '4px' : '0',
+                                    height: `${(m.incomeTotal / maxBar) * 100}%`,
+                                    minHeight: m.incomeTotal > 0 ? '4px' : '0',
                                 }"
                             />
                         </div>
@@ -210,7 +258,7 @@ function fmt(n: number, cur?: string) {
                         >
                             <span class="font-medium">{{ w.name }}</span>
                             <span class="text-muted-foreground">{{
-                                fmt(w.balance)
+                                fmt(w.balance, w.currency)
                             }}</span>
                         </div>
                         <div class="h-1.5 rounded-full bg-sidebar-border/40">
@@ -245,7 +293,7 @@ function fmt(n: number, cur?: string) {
                 <div v-else class="space-y-3">
                     <div
                         v-for="item in categoryBreakdown"
-                        :key="String(item.category_id)"
+                        :key="`${item.category_id}-${item.currency}`"
                         class="flex items-center gap-3"
                     >
                         <div
@@ -265,7 +313,9 @@ function fmt(n: number, cur?: string) {
                                 }}</span>
                                 <span
                                     class="ml-2 shrink-0 text-muted-foreground"
-                                    >{{ fmt(Number(item.total)) }}</span
+                                    >{{
+                                        fmt(Number(item.total), item.currency)
+                                    }}</span
                                 >
                             </div>
                             <div
@@ -305,7 +355,7 @@ function fmt(n: number, cur?: string) {
                 <div v-else class="space-y-3">
                     <div
                         v-for="(item, i) in topMerchants"
-                        :key="String(item.merchant_id)"
+                        :key="`${item.merchant_id}-${item.currency}`"
                         class="flex items-center gap-3"
                     >
                         <div
@@ -324,7 +374,7 @@ function fmt(n: number, cur?: string) {
                             </p>
                         </div>
                         <p class="shrink-0 text-sm font-semibold text-red-400">
-                            {{ fmt(Number(item.total)) }}
+                            {{ fmt(Number(item.total), item.currency) }}
                         </p>
                     </div>
                 </div>

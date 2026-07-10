@@ -15,6 +15,7 @@ class SettingsController extends Controller
     public function edit()
     {
         $settings = Setting::first();
+
         return Inertia::render('settings/Edit', [
             'settings' => $settings,
         ]);
@@ -27,11 +28,11 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'affiliation_number' => 'nullable|string|max:255',
-            'stream'             => 'nullable|string|max:255',
-            'college_name'       => 'nullable|string|max:255',
-            'address'            => 'nullable|string|max:255',
-            'phone_primary'      => 'nullable|string|max:20',
-            'phone_secondary'    => 'nullable|string|max:20',
+            'stream' => 'nullable|string|max:255',
+            'college_name' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'phone_primary' => 'nullable|string|max:20',
+            'phone_secondary' => 'nullable|string|max:20',
         ]);
 
         $settings = Setting::firstOrCreate([]);

@@ -60,5 +60,4 @@ return [
         'price_family' => env('STRIPE_PRICE_FAMILY'),
     ],
 
-
 ];

@@ -30,8 +30,7 @@ test('creates a loan and converts the amount', function () {
         'amount' => 10,
         'currency' => 'USD',
     ])->assertCreated()
-        ->assertJsonPath('data.contact_name', 'Ali')
-        ; // 10 USD * 280
+        ->assertJsonPath('data.contact_name', 'Ali'); // 10 USD * 280
 });
 
 test('validates loan input', function () {

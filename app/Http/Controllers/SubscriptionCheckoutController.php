@@ -22,13 +22,13 @@ class SubscriptionCheckoutController extends Controller
             default => null,
         };
 
-        if (!$priceId) {
+        if (! $priceId) {
             return back()->withErrors(['message' => 'Invalid plan selected.']);
         }
 
         return $user->newSubscription($plan, $priceId)
             ->checkout([
-                'success_url' => route('subscription.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => route('subscription.success').'?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('subscription'),
             ]);
     }

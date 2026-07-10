@@ -81,7 +81,7 @@ const props = defineProps<{
 }>();
 
 // ── Filter state ──────────────────────────────────────────────────────────────
-const currentView = ref(props.view);
+const currentView = ref(props.view ?? 'list');
 const search = ref(props.filters.search ?? '');
 const selectedType = ref(props.filters.type ?? '');
 const selectedCategory = ref(props.filters.category_id ?? '');
@@ -229,7 +229,7 @@ watch(
         selectedMerchant,
         selectedEntity,
     ],
-    navigate,
+    () => navigate(),
 );
 
 // ── Add transaction modal ─────────────────────────────────────────────────────
@@ -497,7 +497,7 @@ function getInitial(name: string) {
             </p>
 
             <div
-                v-if="!transactions?.data.length"
+                v-if="!transactions?.data?.length"
                 class="flex flex-1 items-center justify-center rounded-xl border border-dashed border-sidebar-border/50 p-12 text-center"
             >
                 <div>
@@ -911,8 +911,8 @@ function getInitial(name: string) {
                                 </span>
                             </div>
                         </template>
-                        <template #complete>
-                            <div class="flex justify-center py-6">
+                        <template #next="{ hasMore }">
+                            <div v-if="!hasMore" class="flex justify-center py-6">
                                 <span class="text-xs text-muted-foreground/40"
                                     >All transactions loaded</span
                                 >

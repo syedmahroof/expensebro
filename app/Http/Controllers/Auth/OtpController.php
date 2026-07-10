@@ -31,7 +31,7 @@ class OtpController extends Controller
 
         $phone = preg_replace('/[^0-9+]/', '', $request->phone);
 
-        $key = 'otp-send:' . $phone;
+        $key = 'otp-send:'.$phone;
 
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);
@@ -70,7 +70,7 @@ class OtpController extends Controller
 
         $phone = preg_replace('/[^0-9+]/', '', $request->phone);
 
-        $key = 'otp-verify:' . $phone;
+        $key = 'otp-verify:'.$phone;
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
@@ -97,8 +97,8 @@ class OtpController extends Controller
         $user = User::firstOrCreate(
             ['phone' => $phone],
             [
-                'name' => 'User ' . substr($phone, -4),
-                'email' => $phone . '@whatsapp.local',
+                'name' => 'User '.substr($phone, -4),
+                'email' => $phone.'@whatsapp.local',
                 'password' => bcrypt(str()->random(32)),
                 'phone_verified_at' => now(),
             ]

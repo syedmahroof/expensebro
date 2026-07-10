@@ -2,11 +2,14 @@
 
 namespace App\Providers;
 
+use App\Listeners\SyncPlanOnSubscription;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Cashier\Events\WebhookHandled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,9 +28,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        \Illuminate\Support\Facades\Event::listen(
-            \Laravel\Cashier\Events\WebhookHandled::class,
-            \App\Listeners\SyncPlanOnSubscription::class
+        Event::listen(
+            WebhookHandled::class,
+            SyncPlanOnSubscription::class
         );
     }
 

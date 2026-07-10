@@ -88,6 +88,7 @@ const props = defineProps<{
     categoryBreakdown: Array<{
         category_id: number | null;
         total: string;
+        currency: string;
         category: Category | null;
     }>;
     loans: {
@@ -531,7 +532,7 @@ function daysLabel(days: number): string {
                             stroke-width="3"
                             stroke-linecap="round"
                             class="text-emerald-400 transition-all"
-                            :stroke-dasharray="`${(Math.max(0, Math.min(100, stats.savingsRate)) / 100) * 87.96} 87.96`"
+                            :stroke-dasharray="`${(Math.max(0, Math.min(100, stats.savingsRate[currency] ?? 0)) / 100) * 87.96} 87.96`"
                         />
                     </svg>
                 </div>

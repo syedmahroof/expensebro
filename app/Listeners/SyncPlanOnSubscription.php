@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use Laravel\Cashier\Events\WebhookHandled;
 use App\Models\User;
+use Laravel\Cashier\Events\WebhookHandled;
 
 class SyncPlanOnSubscription
 {
@@ -21,7 +21,7 @@ class SyncPlanOnSubscription
             if ($user) {
                 // Determine plan from price ID or metadata
                 $priceId = $payload['data']['object']['items']['data'][0]['price']['id'];
-                
+
                 $plan = match ($priceId) {
                     config('services.stripe.price_now') => 'now',
                     config('services.stripe.price_family') => 'family',

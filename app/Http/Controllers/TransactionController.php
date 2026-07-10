@@ -41,6 +41,7 @@ class TransactionController extends Controller
             'wallets' => $user->wallets()->where('is_active', true)->get(['id', 'name', 'currency']),
             'categories' => Category::where(fn ($q) => $q->whereNull('user_id')->orWhere('user_id', $user->id))->get(['id', 'name', 'color', 'icon']),
             'merchants' => Merchant::where('user_id', $user->id)->get(['id', 'name']),
+            'trips' => $user->trips()->get(['id', 'name', 'destination']),
             'entities' => Entity::where('user_id', $user->id)->get(['id', 'name']),
             'transactionCurrencies' => Transaction::distinct()->pluck('currency')->filter()->values(),
             'filters' => $request->only(['type', 'category_id', 'wallet_id', 'merchant_id', 'entity_id', 'currency', 'search', 'date_from', 'date_to', 'view']),

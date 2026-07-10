@@ -57,7 +57,6 @@ class LoanController extends Controller
         $defaultCurrency = strtoupper($user->default_currency ?? 'PKR');
 
         $validated['currency'] = $currency;
-        
 
         $user->loans()->create($validated);
 
