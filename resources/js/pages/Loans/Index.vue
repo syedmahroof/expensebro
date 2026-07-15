@@ -52,7 +52,7 @@ interface Loan {
 const props = defineProps<{
     lent: Loan[];
     borrowed: Loan[];
-    summary: { totalLent: number; totalBorrowed: number; settledCount: number };
+    summary: { totalLent: Record<string, number>; totalBorrowed: Record<string, number>; settledCount: number };
     defaultCurrency: string;
     currencies: Record<string, string>;
 }>();
@@ -62,6 +62,24 @@ const CURRENCIES = computed(() => Object.keys(props.currencies));
 
 const showModal = ref(false);
 const defaultType = ref<'lent' | 'borrowed'>('lent');
+
+const netPosition = computed(() => {
+    const currencies = new Set([
+        ...Object.keys(props.summary.totalLent),
+        ...Object.keys(props.summary.totalBorrowed),
+    ]);
+    const result: Record<string, number> = {};
+    for (const curr of currencies) {
+        const lent = props.summary.totalLent[curr] ?? 0;
+        const borrowed = props.summary.totalBorrowed[curr] ?? 0;
+        result[curr] = lent - borrowed;
+    }
+    return result;
+});
+
+const netPositive = computed(() => {
+    return Object.values(netPosition.value).every((amount) => amount >= 0);
+});
 
 const form = useForm({
     contact_name: '',
@@ -181,18 +199,30 @@ function effectiveAmount(loan: Loan) {
                 class="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"
             >
                 <p class="text-xs text-muted-foreground">They Owe Me</p>
-                <p class="mt-1.5 text-xl font-bold text-emerald-400">
-                    {{ fmt(summary.totalLent) }}
-                </p>
+                <div class="mt-1.5 space-y-0.5">
+                    <p
+                        v-for="(amount, curr) in summary.totalLent"
+                        :key="curr"
+                        class="text-xl font-bold text-emerald-400"
+                    >
+                        {{ fmt(amount, curr) }}
+                    </p>
+                </div>
                 <p class="mt-0.5 text-xs text-muted-foreground">
                     {{ lent.filter((l) => !l.settled_at).length }} outstanding
                 </p>
             </div>
             <div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
                 <p class="text-xs text-muted-foreground">I Owe</p>
-                <p class="mt-1.5 text-xl font-bold text-red-400">
-                    {{ fmt(summary.totalBorrowed) }}
-                </p>
+                <div class="mt-1.5 space-y-0.5">
+                    <p
+                        v-for="(amount, curr) in summary.totalBorrowed"
+                        :key="curr"
+                        class="text-xl font-bold text-red-400"
+                    >
+                        {{ fmt(amount, curr) }}
+                    </p>
+                </div>
                 <p class="mt-0.5 text-xs text-muted-foreground">
                     {{ borrowed.filter((l) => !l.settled_at).length }}
                     outstanding
@@ -200,21 +230,23 @@ function effectiveAmount(loan: Loan) {
             </div>
             <div class="rounded-xl border border-sidebar-border/50 bg-card p-4">
                 <p class="text-xs text-muted-foreground">Net Position</p>
-                <p
-                    class="mt-1.5 text-xl font-bold"
-                    :class="
-                        summary.totalLent >= summary.totalBorrowed
-                            ? 'text-emerald-400'
-                            : 'text-red-400'
-                    "
-                >
-                    {{
-                        fmt(Math.abs(summary.totalLent - summary.totalBorrowed))
-                    }}
-                </p>
+                <div class="mt-1.5 space-y-0.5">
+                    <p
+                        v-for="(amount, curr) in netPosition"
+                        :key="curr"
+                        class="text-xl font-bold"
+                        :class="
+                            amount >= 0
+                                ? 'text-emerald-400'
+                                : 'text-red-400'
+                        "
+                    >
+                        {{ amount >= 0 ? '+' : '' }}{{ fmt(Math.abs(amount), curr) }}
+                    </p>
+                </div>
                 <p class="mt-0.5 text-xs text-muted-foreground">
                     {{
-                        summary.totalLent >= summary.totalBorrowed
+                        netPositive
                             ? 'Net owed to you'
                             : 'Net you owe'
                     }}
