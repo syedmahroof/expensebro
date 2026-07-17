@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Ai\Agents\ExpenseParserAgent;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -71,31 +71,16 @@ class AiChatController extends Controller
 
     private function parseWithAi(string $message): array
     {
-        $apiKey = config('services.openai.key');
-
-        if (! $apiKey) {
-            return $this->fallbackParse($message);
-        }
-
         try {
-            $response = Http::withToken($apiKey)
-                ->timeout(10)
-                ->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'response_format' => ['type' => 'json_object'],
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'Extract expense data from text. Return JSON: {"amount":number,"type":"expense|income","description":"string","category":"string","date":"YYYY-MM-DD"}. Use today\'s date if unspecified. Income keywords: salary,received,got,earned.',
-                        ],
-                        ['role' => 'user', 'content' => $message],
-                    ],
-                    'max_tokens' => 150,
-                ]);
+            $response = (new ExpenseParserAgent)->prompt($message);
 
-            $data = $response->json('choices.0.message.content');
-
-            return json_decode($data, true) ?? $this->fallbackParse($message);
+            return [
+                'amount' => (float) $response['amount'],
+                'type' => $response['type'],
+                'description' => $response['description'],
+                'category' => $response['category'],
+                'date' => $response['date'],
+            ];
         } catch (\Exception $e) {
             Log::warning('AI parse failed', ['error' => $e->getMessage()]);
 
