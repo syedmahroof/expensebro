@@ -56,6 +56,19 @@ class WalletController extends Controller
             $request->user()->wallets()->update(['is_default' => false]);
         }
 
+        if (isset($validated['balance']) && $validated['balance'] != $wallet->balance) {
+            $difference = $validated['balance'] - $wallet->balance;
+
+            $request->user()->transactions()->create([
+                'wallet_id' => $wallet->id,
+                'type' => $difference > 0 ? 'income' : 'expense',
+                'amount' => abs($difference),
+                'currency' => $wallet->currency,
+                'description' => 'Wallet balance adjustment',
+                'date' => now(),
+            ]);
+        }
+
         $wallet->update($validated);
 
         return new WalletResource($wallet->refresh());

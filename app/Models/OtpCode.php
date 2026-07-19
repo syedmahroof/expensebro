@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['phone', 'code', 'expires_at', 'verified_at'])]
+#[Fillable(['phone', 'email', 'code', 'expires_at', 'verified_at'])]
 class OtpCode extends Model
 {
     public function isExpired(): bool

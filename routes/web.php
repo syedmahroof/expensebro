@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\Auth\EmailOtpController;
 use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\Auth\SocialController;
 use App\Http\Controllers\DashboardController;
@@ -39,6 +40,10 @@ Route::middleware('guest')->group(function () {
     Route::post('login/whatsapp/send', [OtpController::class, 'sendOtp'])->name('otp.send');
     Route::get('login/whatsapp/verify/{phone}', [OtpController::class, 'showVerify'])->name('otp.verify');
     Route::post('login/whatsapp/verify', [OtpController::class, 'verifyOtp'])->name('otp.verify.submit');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/email/verify-otp', [EmailOtpController::class, 'verify'])->name('verification.verify.otp');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

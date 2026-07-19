@@ -33,18 +33,27 @@ class SocialController extends Controller
             return redirect()->route('login')->withErrors(['email' => 'Social login failed or was cancelled.']);
         }
 
-        $user = User::updateOrCreate(
-            ['social_provider' => $provider, 'social_id' => (string) $socialUser->getId()],
-            [
+        $user = User::where('email', $socialUser->getEmail() ?? "{$provider}_{$socialUser->getId()}@social.local")->first();
+
+        if ($user) {
+            // User exists, update social provider info
+            $user->update([
+                'social_provider' => $provider,
+                'social_id' => (string) $socialUser->getId(),
+                'avatar' => $socialUser->getAvatar() ?? $user->avatar,
+            ]);
+        } else {
+            // Create new user
+            $user = User::create([
                 'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User',
                 'email' => $socialUser->getEmail() ?? "{$provider}_{$socialUser->getId()}@social.local",
+                'social_provider' => $provider,
+                'social_id' => (string) $socialUser->getId(),
                 'avatar' => $socialUser->getAvatar(),
                 'password' => bcrypt(str()->random(32)),
                 'email_verified_at' => now(),
-            ]
-        );
+            ]);
 
-        if ($user->wasRecentlyCreated) {
             $this->createDefaultWallet->create($user);
         }
 
